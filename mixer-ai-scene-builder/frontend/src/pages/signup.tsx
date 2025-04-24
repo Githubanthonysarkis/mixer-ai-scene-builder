@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import styles from '../styles/Layout.module.css';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export default function Signup() {
       });
 
       const data = await res.json();
+
       if (res.ok) {
         setMsg('Signup successful! You can now log in.');
       } else {
@@ -27,24 +29,26 @@ export default function Signup() {
   };
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+    <main className={styles.page}>
       <h1>Sign Up</h1>
       <form onSubmit={handleSubmit}>
         <input
+          className={styles.input}
           type="email"
           placeholder="Email"
           value={email}
           required
           onChange={(e) => setEmail(e.target.value)}
-        /><br /><br />
+        />
         <input
+          className={styles.input}
           type="password"
           placeholder="Password"
           value={password}
           required
           onChange={(e) => setPassword(e.target.value)}
-        /><br /><br />
-        <button type="submit">Sign Up</button>
+        />
+        <button className={styles.button} type="submit">Sign Up</button>
       </form>
       <p>{msg}</p>
     </main>
