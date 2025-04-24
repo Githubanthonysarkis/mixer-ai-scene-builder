@@ -54,6 +54,11 @@ export default function Dashboard() {
     <main className={styles.page}>
       <h1>Dashboard</h1>
       <p>Welcome, {user?.email} 👋</p>
+
+      <button className='styles.button' >
+        Log Out
+
+      </button>
     </main>
   );
 }
