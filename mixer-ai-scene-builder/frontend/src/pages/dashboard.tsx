@@ -55,12 +55,16 @@ export default function Dashboard() {
       <h1>Dashboard</h1>
       <p>Welcome, {user?.email} 👋</p>
 
-      <button className='styles.button' >
+      <button className={styles.button} onClick={() => {
+        localStorage.removeItem('token');
+        router.push('/login');
+      }}>
         Log Out
 
       </button>
     </main>
   );
 }
+
 
 
