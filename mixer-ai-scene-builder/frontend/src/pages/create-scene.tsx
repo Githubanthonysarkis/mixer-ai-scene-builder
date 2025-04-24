@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import styles from '../styles/CreateScene.module.css';
 
 export default function CreateScene() {
-  // ✅ Brands & Mixers
+  // 🎛️ Available brands
   const brands = ['Music Tribe', 'Mackie', 'Midas', 'Presonus', 'QSC', 'Yamaha'];
 
+  // 🎛️ Mixer models per brand
   const mixersByBrand: Record<string, string[]> = {
     'Music Tribe': ['Behringer X32', 'Midas M32', 'Behringer WING', 'XR18', 'MR18'],
     'Mackie': ['DL32R', 'DL1608'],
@@ -14,9 +15,12 @@ export default function CreateScene() {
     'Yamaha': ['TF1', 'TF3', 'QL5', 'CL5'],
   };
 
-  // ✅ State Hooks
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
-  const [selectedMixer, setSelectedMixer] = useState<string | null>(null);
+  const defaultBrand='Music Tribe';
+  const defaultMixer='Behringer X32';
+
+  // 📦 State management
+  const [selectedBrand, setSelectedBrand] = useState<string>(defaultBrand);
+  const [selectedMixer, setSelectedMixer] = useState<string>(defaultMixer);
   const [scenePrompt, setScenePrompt] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationResult, setGenerationResult] = useState<string | null>(null);
@@ -27,7 +31,7 @@ export default function CreateScene() {
       <p className={styles.subtitle}>Select a mixer brand and model to start building your scene.</p>
 
       <div className={styles.layout}>
-        {/* Left Panel - Brands */}
+        {/* Brand selector */}
         <div className={styles.brandPanel}>
           <ul className={styles.brandList}>
             {brands.map((brand) => (
@@ -36,7 +40,7 @@ export default function CreateScene() {
                   className={`${styles.brandButton} ${selectedBrand === brand ? styles.active : ''}`}
                   onClick={() => {
                     setSelectedBrand(brand);
-                    setSelectedMixer(null); // Reset mixer if switching brand
+                    setSelectedMixer(mixersByBrand[brand][0]);
                   }}
                 >
                   {brand}
@@ -46,7 +50,7 @@ export default function CreateScene() {
           </ul>
         </div>
 
-        {/* Right Panel - Mixers + Scene Input */}
+        {/* Mixer selector + scene config */}
         <div className={styles.mixerPanel}>
           {selectedBrand ? (
             <>
@@ -75,7 +79,7 @@ export default function CreateScene() {
                     rows={5}
                   />
 
-                  
+                  {/* ✅ Downloadable scene file trigger */}
                   <button
                     className={styles.generateButton}
                     disabled={isGenerating}
@@ -98,15 +102,28 @@ export default function CreateScene() {
                           }),
                         });
 
-                        const data = await res.json();
-                        if (res.ok) {
-                          setGenerationResult(data.message || 'Scene generated successfully!');
-                        } else {
-                          setGenerationResult(data.error || 'Something went wrong.');
+                        if (!res.ok) {
+                          const errorData = await res.json();
+                          setGenerationResult(errorData.error || 'Scene generation failed.');
+                          return;
                         }
+
+                        const blob = await res.blob();
+                        const fileName = `${selectedMixer.replace(/\s+/g, '_')}_scene.json`;
+
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                        window.URL.revokeObjectURL(url);
+
+                        setGenerationResult(`✅ File "${fileName}" downloaded successfully.`);
                       } catch (err) {
                         console.error(err);
-                        setGenerationResult('Error: Unable to connect to backend.');
+                        setGenerationResult('Error: Unable to download file.');
                       } finally {
                         setIsGenerating(false);
                       }
@@ -115,8 +132,13 @@ export default function CreateScene() {
                     {isGenerating ? 'Generating...' : 'Generate Scene'}
                   </button>
 
+                  {/* Message below button */}
                   {generationResult && (
-                    <p className={`${styles.resultMessage} ${generationResult.startsWith('Error') ? styles.error : styles.success}`}>
+                    <p
+                      className={`${styles.resultMessage} ${
+                        generationResult.startsWith('Error') ? styles.error : styles.success
+                      }`}
+                    >
                       {generationResult}
                     </p>
                   )}

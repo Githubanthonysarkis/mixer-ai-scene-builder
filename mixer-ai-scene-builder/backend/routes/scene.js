@@ -14,12 +14,20 @@ router.post('/generate', (req, res) => {
   console.log(`Mixer: ${mixer}`);
   console.log(`Prompt: ${prompt}`);
   // Mock result (later replaced with AI or actual file generation)
-  const mockSceneData = {
-    success: true,
-    message: `Scene created for ${mixer} (${brand}) with your custom configuration.`,
-  };
 
-  res.json(mockSceneData);
+  const sceneData = {
+    brand,
+    mixer,
+    prompt,
+    createdAt: new Date().toISOString(),
+  };
+  const fileName = `${mixer.replace(/\s+/g, '_')}_scene.json`;
+  const fileContent = JSON.stringify(sceneData, null, 2);
+
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  res.setHeader('Content-Type', 'application/json');
+
+  return res.send(fileContent);
 });
 
 module.exports = router;
