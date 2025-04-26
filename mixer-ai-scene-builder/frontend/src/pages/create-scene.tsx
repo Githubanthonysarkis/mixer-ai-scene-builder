@@ -92,7 +92,8 @@ export default function CreateScene() {
                       setGenerationResult(null);
 
                       try {
-                        const res = await fetch('/api/scene/generate', {
+                        const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+                        const res = await fetch(`${API_BASE}/scene/generate`, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({

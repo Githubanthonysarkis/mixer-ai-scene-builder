@@ -2,7 +2,8 @@
 const express = require('express');
 const cors = require('cors');
 const userRoutes = require('./routes/user');
-const sceneRoutes = require('./routes/scene');
+const generateSceneRoutes = require('./routes/scene/generate');
+const saveSceneRoutes = require('./routes/scene/save');
 require('dotenv').config();
 
 const app = express();
@@ -16,7 +17,8 @@ app.use(express.json());
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
-app.use('/scene', sceneRoutes);
+app.use('/scene', generateSceneRoutes);
+app.use('/scene', saveSceneRoutes);
 
 // Health check
 app.get('/', (req, res) => {
@@ -27,3 +29,6 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server is listening on http://localhost:${PORT}`);
 });
+
+console.log('Loaded PORT:', process.env.PORT);
+console.log('Loaded JWT_SECRET:', process.env.JWT_SECRET);
