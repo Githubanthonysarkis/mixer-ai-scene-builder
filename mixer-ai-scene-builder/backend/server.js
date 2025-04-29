@@ -5,6 +5,7 @@ const userRoutes = require('./routes/user');
 const generateSceneRoutes = require('./routes/scene/generate');
 const saveSceneRoutes = require('./routes/scene/save');
 require('dotenv').config();
+const mongoose = require('mongoose');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -29,6 +30,15 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server is listening on http://localhost:${PORT}`);
 });
+
+// Connect to DB
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ Connected to MongoDB Atlas'))
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 console.log('Loaded PORT:', process.env.PORT);
 console.log('Loaded JWT_SECRET:', process.env.JWT_SECRET);

@@ -1,45 +1,49 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken'); // needed to verify the user
-// const Scene = require('../models/scene');
+const jwt = require('jsonwebtoken');
+const Scene = require('../../models/Scene');
 require('dotenv').config();
 
+// POST /scene/save-scene
 router.post('/save-scene', async (req, res) => {
   try {
-    // 1. Verify Token from Authorization header
+    // 1. Get token from Authorization header
     const token = req.headers.authorization?.split(' ')[1];
+
     if (!token) {
       return res
         .status(401)
-        .json({ error: 'Access denied. No token provided.' });
+        .json({ error: 'No token provided. Unauthorized.' });
     }
+
+    // 2. Verify token and extract user ID
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    //2. extrsct scene data from request body
-    const { brand, mixer, prompt } = req.body;
-    if (!brand || !mixer || !prompt) {
-      return res
-        .status(400)
-        .json({ error: 'All fields are required: brand, mixer, and prompt.' });
+    // 3. Get scene data from body
+    const { brand, mixer, prompt, sceneName } = req.body;
+
+    if (!brand || !mixer || !prompt || !sceneName) {
+      return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    //3. Create a new scene object
+    // 4. Create and save new scene
     const newScene = new Scene({
       userId,
       brand,
       mixer,
       prompt,
       sceneName,
-      createdate: new Date(),
+      createdAt: new Date(),
     });
+
     await newScene.save();
-    res.status(201).json({ message: 'Scene saved successfully' });
+
+    // 5. Send response
+    return res.status(201).json({ message: 'Scene saved successfully.' });
   } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Internal server error. scene could not be saved' });
+    console.error('Error saving scene:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
   }
 });
 
