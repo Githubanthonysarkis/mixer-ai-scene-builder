@@ -5,6 +5,7 @@ const userRoutes = require('./routes/user');
 const generateSceneRoutes = require('./routes/scene/generate');
 const saveSceneRoutes = require('./routes/scene/save');
 require('dotenv').config();
+
 const mongoose = require('mongoose');
 
 const app = express();
@@ -39,6 +40,3 @@ mongoose
     console.error('❌ MongoDB connection error:', err);
     process.exit(1);
   });
-
-console.log('Loaded PORT:', process.env.PORT);
-console.log('Loaded JWT_SECRET:', process.env.JWT_SECRET);
