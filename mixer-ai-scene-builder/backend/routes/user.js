@@ -1,6 +1,5 @@
 const express = require('express');
 const verifyToken = require('../middleware/authMiddleware');
-
 const router = express.Router();
 
 // Example: protected route for dashboard data

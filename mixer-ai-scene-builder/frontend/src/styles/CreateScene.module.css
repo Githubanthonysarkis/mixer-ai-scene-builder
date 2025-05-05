@@ -155,3 +155,19 @@
   background-color: #f2f2f2;
   color: #222;
 }
+
+.saveButton {
+  margin-top: 12px;
+  padding: 10px 20px;
+  background-color: #2b2b2b;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.saveButton:hover {
+  background-color: #444;
+}

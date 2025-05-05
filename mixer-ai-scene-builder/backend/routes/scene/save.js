@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Scene = require('../../models/Scene');
+const User = require('../../models/User'); //for future
 // require('dotenv').config(); can access .env through server.js
 
 // POST /scene/save-scene
