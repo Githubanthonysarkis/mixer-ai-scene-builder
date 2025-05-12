@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/Layout.module.css';
+import { apiFetch } from '@/utils/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -12,24 +13,18 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem('token', data.token);
-        setMsg('Login successful!');
-        router.push('/dashboard');
-      } else {
-        setMsg(data.error || 'Login failed');
-      }
-    } catch (err) {
-      setMsg('Something went wrong');
-    }
+      // apiFetch already returns JSON or throws
+    const data = await apiFetch('auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    localStorage.setItem('token', data.token);
+    setMsg('Login successful!');
+    router.push('/dashboard');
+  } catch (err: any) {
+    setMsg(err.message || 'Login failed');
+  }
   };
 
   return (

@@ -5,6 +5,7 @@ const userRoutes = require('./routes/user');
 const generateSceneRoutes = require('./routes/scene/generate');
 const saveSceneRoutes = require('./routes/scene/save');
 const userScenesRoutes = require('./routes/scene/userScenes');
+const verifyEmailRoute = require('./routes/verifyEmail');
 
 require('dotenv').config();
 
@@ -24,6 +25,7 @@ app.use('/user', userRoutes);
 app.use('/scene', generateSceneRoutes);
 app.use('/scene', saveSceneRoutes);
 app.use('/scene', userScenesRoutes); //fetches scenes in user's dashboard
+app.use('/verify-email', verifyEmailRoute);
 
 // Health check
 app.get('/', (req, res) => {

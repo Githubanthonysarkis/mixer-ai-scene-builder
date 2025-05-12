@@ -1,28 +1,13 @@
 import React, { useState } from 'react';
 import styles from '../styles/CreateScene.module.css';
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-
+import { apiFetch } from '@/utils/api';
 
 export default function CreateScene() {
-  // 🎛️ Available brands
-  const brands = [
-    'Music Tribe',
-    'Mackie',
-    'Midas',
-    'Presonus',
-    'QSC',
-    'Yamaha',
-  ];
+  // 🎛 Supported brands and mixers
+  const brands = ['Music Tribe', 'Mackie', 'Midas', 'Presonus', 'QSC', 'Yamaha'];
 
-  // 🎛️ Mixer models per brand
   const mixersByBrand: Record<string, string[]> = {
-    'Music Tribe': [
-      'Behringer X32',
-      'Midas M32',
-      'Behringer WING',
-      'XR18',
-      'MR18',
-    ],
+    'Music Tribe': ['Behringer X32', 'Midas M32', 'Behringer WING', 'XR18', 'MR18'],
     Mackie: ['DL32R', 'DL1608'],
     Midas: ['PRO1', 'PRO2', 'PRO X'],
     Presonus: ['StudioLive 32SC', 'StudioLive 16R'],
@@ -30,36 +15,33 @@ export default function CreateScene() {
     Yamaha: ['TF1', 'TF3', 'QL5', 'CL5'],
   };
 
+  // 🎚 Defaults for quick demo
   const defaultBrand = 'Music Tribe';
   const defaultMixer = 'Behringer X32';
 
-  // 📦 State management
-  const [selectedBrand, setSelectedBrand] = useState<string>(defaultBrand);
-  const [selectedMixer, setSelectedMixer] = useState<string>(defaultMixer);
-  const [scenePrompt, setScenePrompt] = useState<string>('');
+  // 🎛 UI state
+  const [selectedBrand, setSelectedBrand] = useState(defaultBrand);
+  const [selectedMixer, setSelectedMixer] = useState(defaultMixer);
+  const [scenePrompt, setScenePrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationResult, setGenerationResult] = useState<string | null>(null);
 
   return (
     <main className={styles.page}>
       <h1 className={styles.title}>Mixer AI Scene Builder</h1>
-      <p className={styles.subtitle}>
-        Select a mixer brand and model to start building your scene.
-      </p>
+      <p className={styles.subtitle}>Select a mixer brand and model to start building your scene.</p>
 
       <div className={styles.layout}>
-        {/* Brand selector */}
+        {/* 🧱 Vertical brand selector */}
         <div className={styles.brandPanel}>
           <ul className={styles.brandList}>
             {brands.map((brand) => (
               <li key={brand}>
                 <button
-                  className={`${styles.brandButton} ${
-                    selectedBrand === brand ? styles.active : ''
-                  }`}
+                  className={`${styles.brandButton} ${selectedBrand === brand ? styles.active : ''}`}
                   onClick={() => {
                     setSelectedBrand(brand);
-                    setSelectedMixer(mixersByBrand[brand][0]);
+                    setSelectedMixer(mixersByBrand[brand][0]); // Reset mixer selection
                   }}
                 >
                   {brand}
@@ -69,178 +51,122 @@ export default function CreateScene() {
           </ul>
         </div>
 
-        {/* Mixer selector + scene config */}
+        {/* 🎛 Mixer list and input */}
         <div className={styles.mixerPanel}>
-          {selectedBrand ? (
-            <>
-              <h2>{selectedBrand} Mixers</h2>
-              <div className={styles.mixerList}>
-                {mixersByBrand[selectedBrand]?.map((mixer) => (
-                  <div
-                    key={mixer}
-                    className={`${styles.mixerCard} ${
-                      selectedMixer === mixer ? styles.selected : ''
-                    }`}
-                    onClick={() => setSelectedMixer(mixer)}
-                  >
-                    <h3>{mixer}</h3>
-                    <p>
-                      {selectedMixer === mixer
-                        ? 'Selected!'
-                        : 'Click to configure this model'}
-                    </p>
-                  </div>
-                ))}
+          <h2>{selectedBrand} Mixers</h2>
+          <div className={styles.mixerList}>
+            {mixersByBrand[selectedBrand]?.map((mixer) => (
+              <div
+                key={mixer}
+                className={`${styles.mixerCard} ${selectedMixer === mixer ? styles.selected : ''}`}
+                onClick={() => setSelectedMixer(mixer)}
+              >
+                <h3>{mixer}</h3>
+                <p>{selectedMixer === mixer ? 'Selected!' : 'Click to configure this model'}</p>
               </div>
+            ))}
+          </div>
 
-              {selectedMixer && (
-                <div className={styles.sceneInput}>
-                  <h3>Describe your desired scene setup:</h3>
-                  <textarea
-                    value={scenePrompt}
-                    onChange={(e) => setScenePrompt(e.target.value)}
-                    className={styles.textarea}
-                    placeholder="e.g. Drums on 1-8, reverb on vocals, bus 3 for monitors..."
-                    rows={5}
-                  />
+          {/* 🧠 Scene Input & Button Area */}
+          <div className={styles.sceneInput}>
+            <h3>Describe your desired scene setup:</h3>
+            <textarea
+              value={scenePrompt}
+              onChange={(e) => setScenePrompt(e.target.value)}
+              className={styles.textarea}
+              rows={5}
+              placeholder="e.g. Drums on 1-8, reverb on vocals, monitors to bus 3..."
+            />
 
-                  {/* ✅ Downloadable scene file trigger */}
-                  <button
-                    className={styles.generateButton}
-                    disabled={isGenerating}
-                    onClick={async () => {
-                      if (!selectedBrand || !selectedMixer || !scenePrompt) {
-                        return alert('Please complete all fields.');
-                      }
+            {/* ⚙️ Generate and Download Scene */}
+            <button
+              className={styles.generateButton}
+              disabled={isGenerating}
+              onClick={async () => {
+                if (!selectedBrand || !selectedMixer || !scenePrompt) {
+                  return alert('Please complete all fields.');
+                }
 
-                      setIsGenerating(true);
-                      setGenerationResult(null);
+                setIsGenerating(true);
+                setGenerationResult(null);
 
-                      try {
-                        const res = await fetch(`${API_BASE}/scene/generate`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            brand: selectedBrand,
-                            mixer: selectedMixer,
-                            prompt: scenePrompt,
-                          }),
-                        });
+                try {
+                  const blob = await apiFetch('scene/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      brand: selectedBrand,
+                      mixer: selectedMixer,
+                      prompt: scenePrompt,
+                    }),
+                  });
 
-                        if (!res.ok) {
-                          const errorData = await res.json();
-                          setGenerationResult(
-                            errorData.error || 'Scene generation failed.'
-                          );
-                          return;
-                        }
+                  // 🧾 Download file
+                  const fileName = `${selectedMixer.replace(/\s+/g, '_')}_scene.json`;
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = fileName;
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
 
-                        const blob = await res.blob();
-                        const fileName = `${selectedMixer.replace(
-                          /\s+/g,
-                          '_'
-                        )}_scene.json`;
+                  setGenerationResult(`✅ File "${fileName}" downloaded successfully.`);
+                } catch (err: any) {
+                  console.error(err);
+                  setGenerationResult('Error: Unable to download file.');
+                } finally {
+                  setIsGenerating(false);
+                }
+              }}
+            >
+              {isGenerating ? 'Generating...' : 'Generate Scene'}
+            </button>
 
-                        const url = window.URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = fileName;
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                        window.URL.revokeObjectURL(url);
+            {/* 📌 Result message */}
+            {generationResult && (
+              <p
+                className={`${styles.resultMessage} ${
+                  generationResult.startsWith('Error') ? styles.error : styles.success
+                }`}
+              >
+                {generationResult}
+              </p>
+            )}
 
-                        setGenerationResult(
-                          `✅ File "${fileName}" downloaded successfully.`
-                        );
-                      } catch (err) {
-                        console.error(err);
-                        setGenerationResult('Error: Unable to download file.');
-                      } finally {
-                        setIsGenerating(false);
-                      }
-                    }}
-                  >
-                    {isGenerating ? 'Generating...' : 'Generate Scene'}
-                  </button>
+            {/* 💾 Save Scene for Logged-In Users */}
+            <button
+              className={styles.saveButton}
+              onClick={async () => {
+                const token = localStorage.getItem('token');
+                if (!token) return alert('You must be logged in to save a scene.');
+                const sceneName = prompt('Enter a name for this scene:');
+                if (!sceneName) return;
 
-                  {/* Message below button */}
-                  {generationResult && (
-                    <>
-                      <p
-                        className={`${styles.resultMessage} ${
-                          generationResult.startsWith('Error')
-                            ? styles.error
-                            : styles.success
-                        }`}
-                      >
-                        {generationResult}
-                      </p>
-
-                      {/* scene save button */}
-                      <button
-                        className={styles.saveButton}
-                        onClick={async () => {
-                          const token = localStorage.getItem('token');
-                          if (!token) {
-                            return alert(
-                              'You must be logged in to save a scene.'
-                            );
-                          }
-
-                          const sceneName = prompt(
-                            'Enter a name for this scene:'
-                          );
-                          if (!sceneName) return;
-
-                          try {
-
-
-                            console.log('🔁 Saving scene...');
-                            console.log('👉 URL:', `${process.env.NEXT_PUBLIC_API_BASE_URL}/scene/save-scene`);
-                            console.log('👉 Token:', localStorage.getItem('token'));
-
-
-                            
-                            const res = await fetch(
-                              `${API_BASE}/scene/save-scene`,
-                              {
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  Authorization: `Bearer ${token}`,
-                                },
-                                body: JSON.stringify({
-                                  brand: selectedBrand,
-                                  mixer: selectedMixer,
-                                  prompt: scenePrompt,
-                                  sceneName,
-                                }),
-                              }
-                            );
-
-                            const data = await res.json();
-                            if (res.ok) {
-                              alert('✅ Scene saved successfully!');
-                            } else {
-                              alert(`❌ Failed to save: ${data.error}`);
-                            }
-                          } catch (err) {
-                            console.error('Scene save error:', err);
-                            alert('❌ Error saving scene.');
-                          }
-                        }}
-                      >
-                        Save Scene
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </>
-          ) : (
-            <p>Please select a brand from the left.</p>
-          )}
+                try {
+                  await apiFetch('scene/save-scene', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                      brand: selectedBrand,
+                      mixer: selectedMixer,
+                      prompt: scenePrompt,
+                      sceneName,
+                    }),
+                  });
+                  alert('✅ Scene saved successfully!');
+                } catch (err: any) {
+                  alert(`❌ Failed to save: ${err.message}`);
+                }
+              }}
+            >
+              Save Scene
+            </button>
+          </div>
         </div>
       </div>
     </main>

@@ -20,6 +20,11 @@ router.post('/generate', (req, res) => {
     mixer,
     prompt,
     createdAt: new Date().toISOString(),
+    _generatedBy: {
+      userId: req.user?.id || 'anonymous',
+      timestamp: new Date().toISOString(),
+      signature: 'SOUND-CORE-αx17',
+    },
   };
   const fileName = `${mixer.replace(/\s+/g, '_')}_scene.json`;
   const fileContent = JSON.stringify(sceneData, null, 2);

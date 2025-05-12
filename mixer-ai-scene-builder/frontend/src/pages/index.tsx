@@ -5,7 +5,7 @@ export default function Home() {
   const [message, setMessage] = useState('Loading...');
 
   useEffect(() => {
-    fetch('/api/')
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/`)
       .then((res) => res.text())
       .then((data) => setMessage(data))
       .catch((err) => setMessage('Error contacting backend'));

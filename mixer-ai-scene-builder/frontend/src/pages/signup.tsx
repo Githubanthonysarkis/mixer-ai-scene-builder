@@ -1,30 +1,35 @@
 import { useState } from 'react';
 import styles from '../styles/Layout.module.css';
+import { apiFetch } from '../utils/api';
 
 export default function Signup() {
+  // 🔧 Local form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState('');
 
+  // 🔐 Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const res = await fetch('/api/auth/signup', {
+      /**
+       * apiFetch:
+       *  1. Builds full URL using NEXT_PUBLIC_API_BASE_URL
+       *  2. Throws if response.status >= 400
+       *  3. Parses JSON and returns it
+       */
+      const data = await apiFetch('auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setMsg('Signup successful! You can now log in.');
-      } else {
-        setMsg(data.error || 'Signup failed');
-      }
-    } catch (err) {
-      setMsg('Something went wrong');
+      // If we reach here → request was OK (201) and data is already JSON
+      setMsg(data.message || 'Signup successful! Check your email.');
+    } catch (err: any) {
+      // err.message comes from apiFetch (backend error text)
+      setMsg(err.message || 'Signup failed');
     }
   };
 
@@ -48,7 +53,9 @@ export default function Signup() {
           required
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button className={styles.button} type="submit">Sign Up</button>
+        <button className={styles.button} type="submit">
+          Sign Up
+        </button>
       </form>
       <p>{msg}</p>
     </main>

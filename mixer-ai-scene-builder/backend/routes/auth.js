@@ -2,6 +2,8 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const transporter = require('../utils/mailer');
+const { generateEmailVerificationToken } = require('../utils/token');
 
 const router = express.Router();
 
@@ -32,8 +34,26 @@ router.post('/signup', async (req, res) => {
     await newUser.save();
     console.log('new user saved to mongoDB');
 
+    const token = generateEmailVerificationToken(newUser._id);
+    const link = `${process.env.FRONTEND_BASE_URL}/verify-email?token=${token}`;
+
+    await transporter.sendMail({
+      from: `"Mixer AI Auth" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Verify your Mixer AI account',
+      html: `
+        <h3>Welcome to Mixer AI 🎚️</h3>
+        <p>Click the button below to verify your email:</p>
+        <a href="${link}" style="padding:10px 20px; background:#007bff; color:white;">Verify My Email</a>
+        <p>This link expires in 30 minutes.</p>
+      `,
+    });
+
     // 6. Return success
-    return res.status(201).json({ message: 'User created successfully' });
+    return res.status(201).json({
+      message:
+        'Signup successful. Please check your email to verify your account.',
+    });
   } catch (err) {
     console.error('Signup error:', err);
     return res.status(500).json({ error: 'Internal server error' });
@@ -53,6 +73,12 @@ router.post('/login', async (req, res) => {
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    if (!user.isVerified) {
+      return res
+        .status(401)
+        .json({ error: 'Email not verified.Please check your inobx' });
     }
 
     // 3. Compare entered password with hashed password
