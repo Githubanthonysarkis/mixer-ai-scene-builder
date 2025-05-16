@@ -14,17 +14,17 @@ export default function Login() {
 
     try {
       // apiFetch already returns JSON or throws
-    const data = await apiFetch('auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    localStorage.setItem('token', data.token);
-    setMsg('Login successful!');
-    router.push('/dashboard');
-  } catch (err: any) {
-    setMsg(err.message || 'Login failed');
-  }
+      const data = await apiFetch('auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      localStorage.setItem('token', data.token);
+      setMsg('Login successful!');
+      router.push('/dashboard');
+    } catch (err: any) {
+      setMsg(err.message || 'Login failed');
+    }
   };
 
   return (
@@ -47,8 +47,21 @@ export default function Login() {
           required
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button className={styles.button} type="submit">Log In</button>
+        <button className={styles.button} type="submit">
+          Log In
+        </button>
       </form>
+
+      <button
+        className={styles.button}
+        onClick={() => {
+          //  Initiates the OAuth handshake
+          window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`;
+        }}
+      >
+        Log In with Google
+      </button>
+
       <p>{msg}</p>
     </main>
   );

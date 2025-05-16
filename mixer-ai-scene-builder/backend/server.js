@@ -1,13 +1,14 @@
 // backend/server.js
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const generateSceneRoutes = require('./routes/scene/generate');
 const saveSceneRoutes = require('./routes/scene/save');
 const userScenesRoutes = require('./routes/scene/userScenes');
 const verifyEmailRoute = require('./routes/verifyEmail');
-
-require('dotenv').config();
+const passport = require('./config/passport');
 
 const mongoose = require('mongoose');
 
@@ -17,9 +18,9 @@ const PORT = process.env.PORT || 4000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
 // Routes
-const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/scene', generateSceneRoutes);
